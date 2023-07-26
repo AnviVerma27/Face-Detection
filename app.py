@@ -1,30 +1,18 @@
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer
+import av
 import cv2
+
+st.title("My first Streamlit app")
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-
-st.title("Webcam Streamlit App")
-
-cap = cv2.VideoCapture(0)
-
-if not cap.isOpened():
-    st.error("Error: Unable to access the webcam.")
-frame_width = 640
-frame_height = 480
-cap.set(3, frame_width)
-cap.set(4, frame_height)
-placeholder = st.empty()
-while True:
-    ret, frame = cap.read()
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+def callback(frame):
+    img = frame.to_ndarray(format="bgr24")
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray_img, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
-    if not ret:
-        st.error("Error: Unable to capture frame.")
-        break
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    placeholder.image(rgb_frame, channels='RGB')
-cap.release()
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    return av.VideoFrame.from_ndarray(img, format="bgr24")
 
+webrtc_streamer(key="example", video_frame_callback=callback)
