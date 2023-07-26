@@ -15,4 +15,11 @@ def callback(frame):
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
     return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-webrtc_streamer(key="example", video_frame_callback=callback)
+webrtc_streamer(
+    key="example",
+    video_frame_callback=callback,
+    rtc_configuration={  # Add this line
+        "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+    }
+)
+
